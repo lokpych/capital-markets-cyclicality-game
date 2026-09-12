@@ -56,6 +56,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .progress{height:8px;border-radius:8px;background:#e9eef5;overflow:hidden;margin-top:7px}
 .progress span{display:block;height:100%;background:var(--accent)}
 .notice{padding:10px 12px;border-radius:9px;background:#fff8e6;border:1px solid #f0d28a;color:#725500;margin-top:10px}
+
+.risk-top{display:flex;align-items:end;justify-content:space-between;gap:10px;margin-bottom:8px}.risk-score{font-size:34px;font-weight:800;color:var(--navy);line-height:1}.risk-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.risk-meter{height:9px;border-radius:999px;background:#e7edf5;overflow:hidden;margin:8px 0 12px}.risk-meter span{display:block;height:100%;background:linear-gradient(90deg,#16794b,#d39b15,#b42318);transition:width .2s ease}.risk-row{display:grid;grid-template-columns:1fr 42px;gap:8px;align-items:center;margin:8px 0}.risk-row small{color:var(--muted)}.risk-mini{height:6px;border-radius:999px;background:#edf1f6;overflow:hidden;grid-column:1 / -1}.risk-mini span{display:block;height:100%;background:var(--accent)}
+.anchor{border-top:4px solid var(--gold);background:#fffdf7}.anchor-kicker{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}.anchor-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.anchor-badge{background:#fff3cf;border:1px solid #efd58d;color:#765400;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:700}.anchor-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.anchor-links a{display:inline-block;text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--accent);background:#fff;font-size:12px;font-weight:700}.anchor-links a:hover{text-decoration:underline}.anchor-lesson{margin-top:10px;padding:10px 12px;border-left:3px solid var(--gold);background:#fffaf0;color:#5e4a13;border-radius:6px}.hint-count{font-size:26px;font-weight:800;color:var(--navy)}.hint-display{margin-top:10px;padding:10px 12px;border:1px dashed #b9c6d8;border-radius:9px;background:#f8fbff;color:var(--ink);min-height:52px;font-size:13px;line-height:1.45}.hint-display.empty{color:var(--muted)}.hint-btn{width:100%;margin-top:10px;background:#e8f0ff;color:var(--navy)}
+
 @media(max-width:900px){.main{grid-template-columns:1fr}.round-list{display:grid;grid-template-columns:repeat(3,1fr)}.alloc-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.header{flex-direction:column}.metrics{justify-content:flex-start}.market-row,.objective-grid,.alloc-grid{grid-template-columns:1fr}.round-list{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -111,6 +115,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
           <tr><td>Sharpe approx.</td><td id="pSharpe">—</td></tr>
         </table>
       </div>
+
+      <div class="card">
+        <h3>Risk Scorecard</h3>
+        <div class="risk-top"><div><div id="riskScore" class="risk-score">0</div><small class="muted">0–100 · higher = more risk</small></div><div id="riskLabel" class="risk-label good">Low</div></div>
+        <div class="risk-meter"><span id="riskBar" style="width:0%"></span></div>
+        <div id="riskComponents"></div>
+        <p class="muted" style="font-size:11px;margin-bottom:0">Updates live using the current portfolio plus your proposed allocation.</p>
+      </div>
+
+      <div class="card">
+        <h3>Hint Center</h3>
+        <div style="display:flex;align-items:end;justify-content:space-between;gap:8px"><div><span id="hintsRemaining" class="hint-count">3</span><span class="muted"> hints left</span></div><small class="muted">3 total for the full game</small></div>
+        <button id="hintBtn" class="hint-btn" type="button">Use a hint</button>
+        <div id="hintText" class="hint-display empty">Use hints selectively. Each click reveals one clue for the current round.</div>
+      </div>
     </aside>
 
     <section class="content">
@@ -147,6 +166,17 @@ button:disabled{opacity:.5;cursor:not-allowed}
           <div class="market-box"><span>Growth</span><b id="growth"></b></div>
           <div class="market-box"><span>Volatility</span><b id="vol"></b></div>
         </div>
+      </div>
+
+      <div class="card anchor">
+        <div class="anchor-head">
+          <div><div class="anchor-kicker">Market Anchor</div><h2 id="anchorEra" style="margin-top:4px"></h2></div>
+          <div id="anchorBadge" class="anchor-badge"></div>
+        </div>
+        <p id="anchorScenario"></p>
+        <div id="anchorLesson" class="anchor-lesson"></div>
+        <div id="anchorLinks" class="anchor-links"></div>
+        <p class="muted" style="font-size:11px;margin-bottom:0">Historical analogs are learning anchors, not claims that today will repeat the past. Data links open source series in a new tab.</p>
       </div>
 
       <div class="card">
@@ -190,7 +220,7 @@ mandate:'Establish a balanced starting portfolio that can generate income and ca
 limitations:'Maintain at least 20% liquidity using cash or 3-month instruments. Stocks are capped at 40%. No single investment should exceed 25% of portfolio value.',
 prompt:'How much capital should you commit now, and how much should remain flexible?',
 desc:'Growth is healthy, inflation is sticky, and policy rates remain elevated.',
-infl:.038,rate:.052,growth:.028,vol:.18,shock:'hike'
+infl:.038,rate:.052,growth:.028,vol:.18,shock:'hike',riskTarget:{equity:.35,bonds:.40,cash:.25},anchor:{era:'2023–2024: Higher-for-longer expansion',badge:'Late-cycle / restrictive policy',scenario:'A useful analog is the 2023–2024 U.S. backdrop: inflation was cooling but still elevated relative to the prior decade, policy rates stayed restrictive, and risk assets had to absorb a higher cost of capital.',lesson:'Portfolio lesson: when cash and short Treasuries yield meaningfully, taking equity risk has a higher opportunity cost. Diversification and liquidity become valuable options.',links:[['CPI — FRED','https://fred.stlouisfed.org/series/CPIAUCSL?cosd=2023-01-01&coed=2024-12-31'],['Fed funds — FRED','https://fred.stlouisfed.org/series/FEDFUNDS?cosd=2023-01-01&coed=2024-12-31'],['S&P 500 — FRED','https://fred.stlouisfed.org/series/SP500?cosd=2023-01-01&coed=2024-12-31']]},hints:['Start with the liquidity rule: short Treasuries, short CDs and cash preserve optionality while still earning income.','Do not let a positive growth outlook push the opening portfolio to the equity ceiling; later rounds can create better entry points.','Compare the yield on short fixed income with the extra risk you are taking in equities. A balanced base should survive more than one scenario.']
 },
 {
 name:'Round 2 — Survive the Rate Shock',
@@ -200,7 +230,7 @@ mandate:'Reduce interest-rate sensitivity and excessive equity risk while mainta
 limitations:'Maintain at least 15% liquidity. Growth/technology exposure should remain modest, and long-duration fixed income is constrained.',
 prompt:'Which assets best defend the portfolio when rates jump unexpectedly?',
 desc:'The central bank hikes more aggressively than markets expected.',
-infl:.043,rate:.059,growth:.012,vol:.30,shock:'rate'
+infl:.043,rate:.059,growth:.012,vol:.30,shock:'rate',riskTarget:{equity:.22,bonds:.50,cash:.28},anchor:{era:'2022: Rapid tightening shock',badge:'Rates up / stocks & bonds down',scenario:'In 2022, the Federal Reserve tightened policy rapidly as inflation surged. Treasury yields moved sharply higher while rate-sensitive growth stocks and many bond portfolios experienced simultaneous losses.',lesson:'Portfolio lesson: duration is not the same thing as safety. When yields jump, longer-maturity bonds can lose value even when credit risk is low.',links:[['Fed funds — FRED','https://fred.stlouisfed.org/series/FEDFUNDS?cosd=2022-01-01&coed=2022-12-31'],['10Y Treasury yield — FRED','https://fred.stlouisfed.org/series/DGS10?cosd=2022-01-01&coed=2022-12-31'],['S&P 500 — FRED','https://fred.stlouisfed.org/series/SP500?cosd=2022-01-01&coed=2022-12-31']]},hints:['A rate shock usually favors shorter duration over longer duration because less time is locked into the old yield.','High-growth equities tend to be more sensitive to discount-rate changes than defensive/value equities.','Keeping dry powder can be valuable because the next round may offer improved valuations after the shock.']
 },
 {
 name:'Round 3 — Capture the Soft Landing',
@@ -210,7 +240,7 @@ mandate:'Gradually increase duration and equity exposure while maintaining diver
 limitations:'Stocks may represent up to 60% of NAV. Maintain at least 10% liquidity. Avoid fixed-income maturities that extend beyond the remaining game horizon.',
 prompt:'Do you extend duration, add equities, or keep optionality?',
 desc:'Inflation cools, growth slows but stays positive, and rate cuts become plausible.',
-infl:.028,rate:.048,growth:.020,vol:.17,shock:'soft'
+infl:.028,rate:.048,growth:.020,vol:.17,shock:'soft',riskTarget:{equity:.50,bonds:.32,cash:.18},anchor:{era:'1995: Soft-landing playbook',badge:'Inflation cools / growth holds',scenario:'After aggressive Federal Reserve tightening in 1994, the U.S. economy avoided recession in 1995. Policy rates eventually eased, unemployment remained relatively low, and growth continued.',lesson:'Portfolio lesson: when inflation cools without a recession, both duration and equities can benefit — but the best entry often comes before the soft landing is fully obvious.',links:[['Fed funds — FRED','https://fred.stlouisfed.org/series/FEDFUNDS?cosd=1994-01-01&coed=1996-12-31'],['Unemployment — FRED','https://fred.stlouisfed.org/series/UNRATE?cosd=1994-01-01&coed=1996-12-31'],['Real GDP — FRED','https://fred.stlouisfed.org/series/GDPC1?cosd=1994-01-01&coed=1996-12-31']]},hints:['A soft landing can reward both extending Treasury duration and adding equity beta; you do not have to choose only one.','Because volatility is lower, keeping too much cash creates opportunity cost.','Favor diversification across equity styles rather than concentrating the entire risk increase in growth/tech.']
 },
 {
 name:'Round 4 — Manage Recession Risk',
@@ -220,7 +250,7 @@ mandate:'Prioritize capital preservation using Treasuries, cash, CDs, and defens
 limitations:'Stocks are capped at 35% under the round boundary. Maintain meaningful fixed-income and cash exposure. The portfolio cannot be fully liquidated into cash.',
 prompt:'What mix gives you downside protection without abandoning future upside?',
 desc:'Growth contracts, credit stress rises, and investors move toward safety.',
-infl:.019,rate:.036,growth:-.040,vol:.46,shock:'recession'
+infl:.019,rate:.036,growth:-.040,vol:.46,shock:'recession',riskTarget:{equity:.25,bonds:.50,cash:.25},anchor:{era:'2007–2009: Global Financial Crisis',badge:'Recession / flight to quality',scenario:'The 2007–2009 recession combined collapsing risk appetite, severe financial stress, rising unemployment and deep equity losses. Investors sought liquidity and high-quality government securities.',lesson:'Portfolio lesson: liquidity becomes most valuable when everyone wants it at once. Capital preservation can create the ability to buy recovery assets later.',links:[['NBER recession chronology','https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions'],['Unemployment — FRED','https://fred.stlouisfed.org/series/UNRATE?cosd=2007-01-01&coed=2010-01-01'],['Financial Stress Index — FRED','https://fred.stlouisfed.org/series/STLFSI4?cosd=2007-01-01&coed=2010-01-01']]},hints:['This round is about surviving first. Ask which holdings can lose the least while still leaving you able to participate later.','Short Treasuries and cash improve liquidity; defensive/value equity can preserve some upside without taking full beta.','Avoid solving recession risk by moving to 100% cash — the mandate requires some investment exposure and the recovery can begin before the data look good.']
 },
 {
 name:'Round 5 — Reinvest for Recovery',
@@ -230,7 +260,7 @@ mandate:'Increase exposure to equities and duration while maintaining reasonable
 limitations:'Maintain at least 10% liquidity. No single asset class should dominate the portfolio, and equity-sector concentration should remain controlled.',
 prompt:'Which assets should receive the most capital as risk appetite returns?',
 desc:'Policy eases, liquidity improves, and equity markets begin to recover.',
-infl:.021,rate:.029,growth:.052,vol:.24,shock:'recovery'
+infl:.021,rate:.029,growth:.052,vol:.24,shock:'recovery',riskTarget:{equity:.50,bonds:.30,cash:.20},anchor:{era:'2009–2010: Early-cycle recovery',badge:'Policy easing / risk rebound',scenario:'After the 2009 recession trough, financial conditions improved, real activity recovered, and risk assets began rebounding well before the economy felt fully normal.',lesson:'Portfolio lesson: recoveries often reward disciplined redeployment from cash and defensive assets into diversified risk exposure. Waiting for perfect confirmation can mean missing a large part of the rebound.',links:[['NBER 2009 trough announcement','https://www.nber.org/news/business-cycle-dating-committee-announcement-september-20-2010'],['Real GDP — FRED','https://fred.stlouisfed.org/series/GDPC1?cosd=2009-01-01&coed=2011-12-31'],['NASDAQ Composite — FRED','https://fred.stlouisfed.org/series/NASDAQCOM?cosd=2009-01-01&coed=2011-12-31']]},hints:['Recovery rounds generally reward moving some capital out of defensive cash positions and back toward return-seeking assets.','Small-cap and growth exposure can benefit from improving conditions, but concentration still matters.','Falling rates can also help longer-duration Treasuries, so recovery does not automatically mean abandoning fixed income.']
 },
 {
 name:'Round 6 — Finish Strong',
@@ -238,13 +268,13 @@ situation:'Economic conditions normalize, volatility declines, and markets enter
 objective:'Maximize final risk-adjusted portfolio value while protecting accumulated gains.',
 mandate:'Optimize ending NAV, Sharpe ratio, liquidity, and maximum drawdown rather than simply taking the highest possible risk.',
 limitations:'Stocks are capped at 55% under the final-round boundary. Maintain at least 10% liquidity. Investments maturing after the game horizon have reduced flexibility.',
-prompt:'How aggressive should your final allocation be when the score depends on both return and risk?',
+prompt:'How aggressive should the final allocation be when the score depends on both return and risk?',
 desc:'Markets normalize, growth remains positive, and volatility falls.',
-infl:.025,rate:.039,growth:.035,vol:.15,shock:'normal'
+infl:.025,rate:.039,growth:.035,vol:.15,shock:'normal',riskTarget:{equity:.45,bonds:.35,cash:.20},anchor:{era:'2017–2018: Normalization and late-cycle discipline',badge:'Low volatility / gradual hikes',scenario:'The 2017–2018 period featured solid growth, relatively low volatility for much of the stretch, and gradual Federal Reserve policy normalization before volatility returned late in 2018.',lesson:'Portfolio lesson: calm markets can tempt investors to overreach. In the final round, protecting accumulated gains can matter more than maximizing one-period upside.',links:[['VIX — FRED','https://fred.stlouisfed.org/series/VIXCLS?cosd=2017-01-01&coed=2018-12-31'],['Fed funds — FRED','https://fred.stlouisfed.org/series/FEDFUNDS?cosd=2017-01-01&coed=2018-12-31'],['NASDAQ Composite — FRED','https://fred.stlouisfed.org/series/NASDAQCOM?cosd=2017-01-01&coed=2018-12-31']]},hints:['The final score penalizes drawdown, so the highest-return-looking allocation is not automatically the best allocation.','Use the remaining horizon: a long lock-up has less strategic value when there are no later rounds to exploit it.','A balanced finish typically combines enough equity for growth with liquid and high-quality assets that protect prior gains.']
 }
 ];
 
-let state={round:0,nav:100,cash:100,initial:100,positions:[],returns:[],peak:100,maxDD:0,manager:'',mandate:'balanced'};
+let state={round:0,nav:100,cash:100,initial:100,positions:[],returns:[],peak:100,maxDD:0,manager:'',mandate:'balanced',hintsLeft:3,hintCursor:{}};
 
 const $=id=>document.getElementById(id);
 const pct=x=>(x*100).toFixed(1)+'%';
@@ -269,10 +299,59 @@ function renderAssets(){
   document.querySelectorAll('#assetGrid input').forEach(i=>i.addEventListener('input',updateAllocationStatus));
 }
 
+function clamp(x,min=0,max=100){return Math.max(min,Math.min(max,x));}
+
+function proposedAllocation(){
+  const out={};
+  document.querySelectorAll('#assetGrid input').forEach(i=>out[i.dataset.id]=Math.max(0,Number(i.value)||0));
+  return out;
+}
+
+function riskSnapshot(){
+  const holdings={};
+  state.positions.forEach(p=>holdings[p.id]=(holdings[p.id]||0)+p.amount);
+  const proposed=proposedAllocation();
+  Object.entries(proposed).forEach(([id,amt])=>holdings[id]=(holdings[id]||0)+amt);
+  const proposedTotal=Object.values(proposed).reduce((a,b)=>a+b,0);
+  const unallocated=Math.max(0,state.cash-proposedTotal);
+  const total=unallocated+Object.values(holdings).reduce((a,b)=>a+b,0) || 1;
+  const amount=id=>holdings[id]||0;
+  const equity=amount('large')+amount('growth')+amount('value')+amount('small')+amount('intl');
+  const bonds=amount('t3')+amount('t6')+amount('t12')+amount('cd3')+amount('cd6')+amount('cd12');
+  const liquid=unallocated+amount('cash')+amount('t3')+amount('cd3');
+  const longFixed=amount('t12')+amount('cd12');
+  const midFixed=amount('t6')+amount('cd6');
+  const highBeta=amount('growth')+amount('small');
+  const maxPos=Math.max(unallocated,...Object.values(holdings),0);
+  const target=rounds[state.round].riskTarget;
+  const equityShare=equity/total, bondShare=bonds/total, liquidShare=liquid/total;
+  const cashLikeShare=(unallocated+amount('cash'))/total;
+  const equityRisk=clamp(equityShare*105 + highBeta/total*45);
+  const durationRisk=clamp(longFixed/total*180 + midFixed/total*65);
+  const liquidityRisk=clamp((1-liquidShare)*100);
+  const concentrationRisk=clamp(maxPos/total*190);
+  const mismatchRisk=clamp((Math.abs(equityShare-target.equity)+Math.abs(bondShare-target.bonds)+Math.abs(cashLikeShare-target.cash))*115);
+  const overall=Math.round(equityRisk*.30+durationRisk*.18+liquidityRisk*.24+concentrationRisk*.16+mismatchRisk*.12);
+  return {overall,equityRisk,durationRisk,liquidityRisk,concentrationRisk,mismatchRisk};
+}
+
+function updateRiskScore(){
+  const r=riskSnapshot();
+  const label=r.overall<=30?'Low':r.overall<=50?'Moderate':r.overall<=70?'Elevated':'High';
+  const cls=r.overall<=30?'good':r.overall<=50?'gold':'bad';
+  $('riskScore').textContent=r.overall;
+  $('riskLabel').textContent=label;
+  $('riskLabel').className='risk-label '+cls;
+  $('riskBar').style.width=r.overall+'%';
+  const rows=[['Equity beta',r.equityRisk],['Duration / lock-up',r.durationRisk],['Liquidity',r.liquidityRisk],['Concentration',r.concentrationRisk],['Regime mismatch',r.mismatchRisk]];
+  $('riskComponents').innerHTML=rows.map(([name,val])=>`<div class="risk-row"><small>${name}</small><b>${Math.round(val)}</b><div class="risk-mini"><span style="width:${val}%"></span></div></div>`).join('');
+}
+
 function updateAllocationStatus(){
   const total=[...document.querySelectorAll('#assetGrid input')].reduce((s,i)=>s+(Number(i.value)||0),0);
   $('allocationStatus').innerHTML=`Available cash: <b>${money(state.cash)}</b> &nbsp; | &nbsp; Proposed allocation: <b class="${total>state.cash?'bad':'good'}">${money(total)}</b>`;
   $('advanceBtn').disabled=total>state.cash+0.001;
+  updateRiskScore();
 }
 
 function renderPortfolio(){
@@ -316,10 +395,36 @@ function render(){
   $('policy').textContent=pct(r.rate);
   $('growth').textContent=(r.growth>=0?'+':'')+pct(r.growth);
   $('vol').textContent=pct(r.vol);
+  $('anchorEra').textContent=r.anchor.era;
+  $('anchorBadge').textContent=r.anchor.badge;
+  $('anchorScenario').textContent=r.anchor.scenario;
+  $('anchorLesson').innerHTML='<b>Portfolio lesson:</b> '+r.anchor.lesson.replace(/^Portfolio lesson:\s*/,'');
+  $('anchorLinks').innerHTML=r.anchor.links.map(([label,url])=>`<a href="${url}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`).join('');
+  $('hintsRemaining').textContent=state.hintsLeft;
+  $('hintBtn').disabled=state.hintsLeft<=0;
+  $('hintText').className='hint-display empty';
+  $('hintText').textContent=state.hintsLeft>0?'Use hints selectively. Each click reveals one clue for the current round.':'No hints remaining for this game.';
   renderAssets();
   renderPortfolio();
   updatePerf();
   updateAllocationStatus();
+}
+
+function useHint(){
+  if(state.hintsLeft<=0){return;}
+  const r=rounds[state.round];
+  const idx=state.hintCursor[state.round]||0;
+  if(idx>=r.hints.length){
+    $('hintText').className='hint-display';
+    $('hintText').textContent='All three hints for this round have already been revealed.';
+    return;
+  }
+  state.hintsLeft-=1;
+  state.hintCursor[state.round]=idx+1;
+  $('hintsRemaining').textContent=state.hintsLeft;
+  $('hintText').className='hint-display';
+  $('hintText').innerHTML=`<b>Hint ${idx+1}:</b> ${r.hints[idx]}`;
+  $('hintBtn').disabled=state.hintsLeft<=0;
 }
 
 function assetRoundReturn(a,r){
@@ -418,6 +523,7 @@ $('startBtn').addEventListener('click',()=>{
   render();
 });
 $('advanceBtn').addEventListener('click',advance);
+$('hintBtn').addEventListener('click',useHint);
 $('resetBtn').addEventListener('click',()=>{
   document.querySelectorAll('#assetGrid input').forEach(i=>i.value='0');
   updateAllocationStatus();
