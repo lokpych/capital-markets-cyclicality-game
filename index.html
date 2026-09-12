@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Six-round capital markets portfolio management simulation with equities, Treasuries, CDs and cash.">
+<title>Capital Markets Portfolio Manager Challenge</title>
+<style>
+:root{
+  --bg:#f4f7fb;--panel:#ffffff;--ink:#152033;--muted:#6b778c;--line:#dfe6ef;
+  --navy:#173b67;--accent:#2f6fed;--green:#16794b;--red:#b42318;--gold:#9a6a00;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.shell{max-width:1180px;margin:auto;padding:22px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px}
+.brand h1{margin:0;font-size:28px;color:var(--navy)}
+.brand p{margin:6px 0 0;color:var(--muted)}
+.metrics{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-width:110px}
+.metric span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.metric b{font-size:17px}
+.main{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px}
+.sidebar,.content{min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.round-nav h3,.card h2,.card h3{margin:0 0 10px}
+.round-list{display:flex;flex-direction:column;gap:8px}
+.round-step{padding:10px 12px;border-radius:9px;border:1px solid var(--line);color:var(--muted);background:#fbfcfe}
+.round-step.active{border-color:var(--accent);background:#edf4ff;color:var(--navy);font-weight:700}
+.round-step.done{background:#edf8f2;color:var(--green)}
+.objective{border-left:5px solid var(--accent);background:#f8fbff}
+.objective-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.callout{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff}
+.callout strong{display:block;margin-bottom:4px}
+.callout small{color:var(--muted)}
+.market-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.market-box{border:1px solid var(--line);border-radius:10px;padding:12px}
+.market-box span{display:block;color:var(--muted);font-size:12px}
+.market-box b{font-size:18px}
+.alloc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.asset{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff}
+.asset .type{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent)}
+.asset strong{display:block;margin:3px 0 4px}
+.asset p{margin:0 0 9px;color:var(--muted);font-size:12px;min-height:32px}
+.asset input{width:100%;border:1px solid #cfd8e5;border-radius:8px;padding:9px;font-size:15px}
+.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer}
+button.primary{background:var(--accent);color:white}
+button.secondary{background:#e9eef6;color:var(--navy)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table td,.table th{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left}
+.muted{color:var(--muted)}
+.good{color:var(--green)}.bad{color:var(--red)}.gold{color:var(--gold)}
+.hidden{display:none}
+.progress{height:8px;border-radius:8px;background:#e9eef5;overflow:hidden;margin-top:7px}
+.progress span{display:block;height:100%;background:var(--accent)}
+.notice{padding:10px 12px;border-radius:9px;background:#fff8e6;border:1px solid #f0d28a;color:#725500;margin-top:10px}
+@media(max-width:900px){.main{grid-template-columns:1fr}.round-list{display:grid;grid-template-columns:repeat(3,1fr)}.alloc-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.header{flex-direction:column}.metrics{justify-content:flex-start}.market-row,.objective-grid,.alloc-grid{grid-template-columns:1fr}.round-list{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="header">
+    <div class="brand">
+      <h1>Capital Markets: Portfolio Manager Challenge</h1>
+      <p>6 rounds • $100M starting capital • equities + Treasuries + CDs</p>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span>Round</span><b id="mRound">1 / 6</b></div>
+      <div class="metric"><span>NAV</span><b id="mNav">$100.0M</b></div>
+      <div class="metric"><span>Cash</span><b id="mCash">$100.0M</b></div>
+      <div class="metric"><span>Score</span><b id="mScore">—</b></div>
+    </div>
+  </div>
+
+  <div id="setup" class="card">
+    <h2>Fund Setup</h2>
+    <p class="muted">Choose your mandate, then manage the fund through six changing market environments.</p>
+    <label>Manager name<br><input id="manager" value="Portfolio Manager" style="width:100%;max-width:420px;padding:10px;border:1px solid #cfd8e5;border-radius:8px;margin-top:6px"></label>
+    <br><br>
+    <label>Risk mandate<br>
+      <select id="mandate" style="width:100%;max-width:420px;padding:10px;border:1px solid #cfd8e5;border-radius:8px;margin-top:6px">
+        <option value="conservative">Conservative</option>
+        <option value="balanced" selected>Balanced</option>
+        <option value="aggressive">Aggressive</option>
+      </select>
+    </label>
+    <div class="actions"><button class="primary" id="startBtn">Start Game</button></div>
+  </div>
+
+  <div id="game" class="hidden main">
+    <aside class="sidebar">
+      <div class="card round-nav">
+        <h3>Round Map</h3>
+        <div id="roundList" class="round-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>Portfolio Snapshot</h3>
+        <div id="portfolio"></div>
+      </div>
+
+      <div class="card">
+        <h3>Performance</h3>
+        <table class="table">
+          <tr><td>Total return</td><td id="pReturn">0.0%</td></tr>
+          <tr><td>Max drawdown</td><td id="pDD">0.0%</td></tr>
+          <tr><td>Liquidity</td><td id="pLiq">100.0%</td></tr>
+          <tr><td>Sharpe approx.</td><td id="pSharpe">—</td></tr>
+        </table>
+      </div>
+    </aside>
+
+    <section class="content">
+      <div class="card objective">
+        <div class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.08em">Round Brief</div>
+        <h2 id="objectiveTitle"></h2>
+        <div class="objective-grid">
+          <div class="callout">
+            <strong>Situation</strong>
+            <small id="situationText"></small>
+          </div>
+          <div class="callout">
+            <strong>Objective</strong>
+            <small id="objectiveText"></small>
+          </div>
+          <div class="callout">
+            <strong>Mandate</strong>
+            <small id="mandateText"></small>
+          </div>
+          <div class="callout">
+            <strong>Limitations</strong>
+            <small id="limitationsText"></small>
+          </div>
+        </div>
+        <div class="notice"><b>Decision prompt:</b> <span id="decisionPrompt"></span></div>
+      </div>
+
+      <div class="card">
+        <h2 id="marketTitle"></h2>
+        <p id="marketDesc" class="muted"></p>
+        <div class="market-row">
+          <div class="market-box"><span>Inflation</span><b id="inflation"></b></div>
+          <div class="market-box"><span>Policy rate</span><b id="policy"></b></div>
+          <div class="market-box"><span>Growth</span><b id="growth"></b></div>
+          <div class="market-box"><span>Volatility</span><b id="vol"></b></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Allocate Available Cash</h2>
+        <p id="allocationStatus" class="muted"></p>
+        <div id="assetGrid" class="alloc-grid"></div>
+        <div class="actions">
+          <button class="secondary" id="resetBtn">Reset Allocation</button>
+          <button class="primary" id="advanceBtn">Lock Allocation & Advance</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="results" class="card hidden"></div>
+</div>
+<div style="max-width:1180px;margin:0 auto;padding:0 22px 22px;color:#6b778c;font-size:12px;text-align:center">Educational simulation only. Market outcomes and returns are illustrative.</div>
+
+<script>
+const assets=[
+{id:'t3',name:'3M Treasury',type:'Treasury',term:1,yield:.041,desc:'Highest liquidity; minimal duration exposure.'},
+{id:'t6',name:'6M Treasury',type:'Treasury',term:2,yield:.043,desc:'Moderate yield with short lock-up.'},
+{id:'t12',name:'1Y Treasury',type:'Treasury',term:3,yield:.045,desc:'Locks rate longer; more duration sensitivity.'},
+{id:'cd3',name:'3M CD',type:'CD',term:1,yield:.047,desc:'Yield premium with limited flexibility.'},
+{id:'cd6',name:'6M CD',type:'CD',term:2,yield:.050,desc:'Higher yield, less liquid until maturity.'},
+{id:'cd12',name:'1Y CD',type:'CD',term:3,yield:.053,desc:'Highest fixed yield; longest lock-up.'},
+{id:'large',name:'Large-Cap Equity',type:'Equity',term:0,mu:.075,desc:'Core U.S. equity exposure.'},
+{id:'growth',name:'Growth / Tech',type:'Equity',term:0,mu:.105,desc:'Higher upside and higher volatility.'},
+{id:'value',name:'Dividend / Value',type:'Equity',term:0,mu:.065,desc:'Defensive equity with income bias.'},
+{id:'small',name:'Small-Cap Equity',type:'Equity',term:0,mu:.085,desc:'Cyclical, rate-sensitive, higher beta.'},
+{id:'intl',name:'International Equity',type:'Equity',term:0,mu:.070,desc:'Diversifies U.S. equity exposure.'},
+{id:'cash',name:'Cash Reserve',type:'Cash',term:0,yield:.025,desc:'Dry powder and downside protection.'}
+];
+
+const rounds=[
+{
+name:'Round 1 — Build the Base',
+situation:'The economy is expanding, inflation remains above target, and interest rates are elevated. Equity markets are positive, but future rate policy is uncertain.',
+objective:'Build the initial portfolio with a diversified mix of equities, Treasuries, CDs, and cash while preserving enough liquidity for later rounds.',
+mandate:'Establish a balanced starting portfolio that can generate income and capital appreciation without taking excessive concentration risk.',
+limitations:'Maintain at least 20% liquidity using cash or 3-month instruments. Stocks are capped at 40%. No single investment should exceed 25% of portfolio value.',
+prompt:'How much capital should you commit now, and how much should remain flexible?',
+desc:'Growth is healthy, inflation is sticky, and policy rates remain elevated.',
+infl:.038,rate:.052,growth:.028,vol:.18,shock:'hike'
+},
+{
+name:'Round 2 — Survive the Rate Shock',
+situation:'Inflation proves persistent and the central bank unexpectedly raises rates. Bond prices come under pressure and high-growth equities sell off.',
+objective:'Protect portfolio value and limit drawdowns during the rate shock.',
+mandate:'Reduce interest-rate sensitivity and excessive equity risk while maintaining enough exposure to benefit if markets stabilize.',
+limitations:'Maintain at least 15% liquidity. Growth/technology exposure should remain modest, and long-duration fixed income is constrained.',
+prompt:'Which assets best defend the portfolio when rates jump unexpectedly?',
+desc:'The central bank hikes more aggressively than markets expected.',
+infl:.043,rate:.059,growth:.012,vol:.30,shock:'rate'
+},
+{
+name:'Round 3 — Capture the Soft Landing',
+situation:'Inflation begins to decline while economic growth remains positive. Markets increasingly expect the central bank to stop hiking and eventually cut rates.',
+objective:'Position the portfolio to benefit from improving equity markets and falling yields without becoming overly aggressive.',
+mandate:'Gradually increase duration and equity exposure while maintaining diversification and downside protection.',
+limitations:'Stocks may represent up to 60% of NAV. Maintain at least 10% liquidity. Avoid fixed-income maturities that extend beyond the remaining game horizon.',
+prompt:'Do you extend duration, add equities, or keep optionality?',
+desc:'Inflation cools, growth slows but stays positive, and rate cuts become plausible.',
+infl:.028,rate:.048,growth:.020,vol:.17,shock:'soft'
+},
+{
+name:'Round 4 — Manage Recession Risk',
+situation:'Economic activity contracts, unemployment rises, corporate earnings weaken, and equity volatility increases sharply. Investors seek safer assets.',
+objective:'Preserve capital and liquidity through the recession while retaining enough upside exposure for a future recovery.',
+mandate:'Prioritize capital preservation using Treasuries, cash, CDs, and defensive equities while controlling portfolio drawdown.',
+limitations:'Stocks are capped at 35% under the round boundary. Maintain meaningful fixed-income and cash exposure. The portfolio cannot be fully liquidated into cash.',
+prompt:'What mix gives you downside protection without abandoning future upside?',
+desc:'Growth contracts, credit stress rises, and investors move toward safety.',
+infl:.019,rate:.036,growth:-.040,vol:.46,shock:'recession'
+},
+{
+name:'Round 5 — Reinvest for Recovery',
+situation:'The central bank cuts rates, financial conditions improve, and economic indicators begin to recover. Equity markets rebound and longer-duration assets benefit.',
+objective:'Redeploy defensive positions into investments that can participate in the economic recovery.',
+mandate:'Increase exposure to equities and duration while maintaining reasonable diversification and liquidity.',
+limitations:'Maintain at least 10% liquidity. No single asset class should dominate the portfolio, and equity-sector concentration should remain controlled.',
+prompt:'Which assets should receive the most capital as risk appetite returns?',
+desc:'Policy eases, liquidity improves, and equity markets begin to recover.',
+infl:.021,rate:.029,growth:.052,vol:.24,shock:'recovery'
+},
+{
+name:'Round 6 — Finish Strong',
+situation:'Economic conditions normalize, volatility declines, and markets enter a more stable environment. There is limited time to recover from a late mistake.',
+objective:'Maximize final risk-adjusted portfolio value while protecting accumulated gains.',
+mandate:'Optimize ending NAV, Sharpe ratio, liquidity, and maximum drawdown rather than simply taking the highest possible risk.',
+limitations:'Stocks are capped at 55% under the final-round boundary. Maintain at least 10% liquidity. Investments maturing after the game horizon have reduced flexibility.',
+prompt:'How aggressive should your final allocation be when the score depends on both return and risk?',
+desc:'Markets normalize, growth remains positive, and volatility falls.',
+infl:.025,rate:.039,growth:.035,vol:.15,shock:'normal'
+}
+];
+
+let state={round:0,nav:100,cash:100,initial:100,positions:[],returns:[],peak:100,maxDD:0,manager:'',mandate:'balanced'};
+
+const $=id=>document.getElementById(id);
+const pct=x=>(x*100).toFixed(1)+'%';
+const money=x=>'$'+x.toFixed(1)+'M';
+
+function renderRoundList(){
+  $('roundList').innerHTML=rounds.map((r,i)=>{
+    let cls=i<state.round?'round-step done':i===state.round?'round-step active':'round-step';
+    return `<div class="${cls}">${i<state.round?'✓ ':''}${i+1}. ${r.name.split('—')[1].trim()}</div>`;
+  }).join('');
+}
+
+function renderAssets(){
+  $('assetGrid').innerHTML=assets.map(a=>`
+    <div class="asset">
+      <div class="type">${a.type}</div>
+      <strong>${a.name}</strong>
+      <p>${a.desc}</p>
+      <label class="muted" style="font-size:12px">Allocate ($M)</label>
+      <input type="number" min="0" step="0.1" value="0" data-id="${a.id}">
+    </div>`).join('');
+  document.querySelectorAll('#assetGrid input').forEach(i=>i.addEventListener('input',updateAllocationStatus));
+}
+
+function updateAllocationStatus(){
+  const total=[...document.querySelectorAll('#assetGrid input')].reduce((s,i)=>s+(Number(i.value)||0),0);
+  $('allocationStatus').innerHTML=`Available cash: <b>${money(state.cash)}</b> &nbsp; | &nbsp; Proposed allocation: <b class="${total>state.cash?'bad':'good'}">${money(total)}</b>`;
+  $('advanceBtn').disabled=total>state.cash+0.001;
+}
+
+function renderPortfolio(){
+  let html=`<div class="muted">Cash</div><b>${money(state.cash)}</b><div class="progress"><span style="width:${Math.min(100,(state.cash/Math.max(state.nav,.01))*100)}%"></span></div>`;
+  const grouped={};
+  state.positions.forEach(p=>{
+    const a=assets.find(x=>x.id===p.id);
+    grouped[a.name]=(grouped[a.name]||0)+p.amount;
+  });
+  if(Object.keys(grouped).length){
+    html+=`<div style="margin-top:12px"></div>`;
+    Object.entries(grouped).forEach(([k,v])=>html+=`<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)"><span>${k}</span><b>${money(v)}</b></div>`);
+  }
+  $('portfolio').innerHTML=html;
+}
+
+function updatePerf(){
+  $('mRound').textContent=`${state.round+1} / 6`;
+  $('mNav').textContent=money(state.nav);
+  $('mCash').textContent=money(state.cash);
+  $('pReturn').textContent=pct(state.nav/state.initial-1);
+  $('pDD').textContent=pct(state.maxDD);
+  $('pLiq').textContent=pct(state.cash/Math.max(state.nav,.01));
+  let avg=state.returns.length?state.returns.reduce((a,b)=>a+b,0)/state.returns.length:0;
+  let sd=state.returns.length?Math.sqrt(state.returns.reduce((s,x)=>s+(x-avg)**2,0)/state.returns.length):0;
+  $('pSharpe').textContent=sd?((avg-.003)/sd).toFixed(2):'—';
+}
+
+function render(){
+  const r=rounds[state.round];
+  renderRoundList();
+  $('objectiveTitle').textContent=r.name;
+  $('situationText').textContent=r.situation;
+  $('objectiveText').textContent=r.objective;
+  $('mandateText').textContent=r.mandate;
+  $('limitationsText').textContent=r.limitations;
+  $('decisionPrompt').textContent=r.prompt;
+  $('marketTitle').textContent='Market Environment';
+  $('marketDesc').textContent=r.desc;
+  $('inflation').textContent=pct(r.infl);
+  $('policy').textContent=pct(r.rate);
+  $('growth').textContent=(r.growth>=0?'+':'')+pct(r.growth);
+  $('vol').textContent=pct(r.vol);
+  renderAssets();
+  renderPortfolio();
+  updatePerf();
+  updateAllocationStatus();
+}
+
+function assetRoundReturn(a,r){
+  if(a.type==='Cash') return a.yield/6;
+  if(a.type==='Treasury'){
+    const duration=(a.term/3);
+    const rateMove=r.rate-.04;
+    return a.yield/6 - rateMove*duration*0.18;
+  }
+  if(a.type==='CD') return a.yield/6;
+  let shock=r.growth;
+  if(r.shock==='rate') shock-=.06;
+  if(r.shock==='recession') shock-=.09;
+  if(r.shock==='recovery') shock+=.07;
+  if(r.shock==='soft') shock+=.03;
+  const beta=a.id==='growth'?1.25:a.id==='small'?1.15:a.id==='value'?.75:a.id==='intl'?.9:1;
+  return a.mu/6 + shock*beta + (Math.random()-.5)*r.vol*.15;
+}
+
+function advance(){
+  const inputs=[...document.querySelectorAll('#assetGrid input')];
+  const total=inputs.reduce((s,i)=>s+(Number(i.value)||0),0);
+  if(total>state.cash+0.001){alert('Allocation exceeds available cash.');return;}
+  const newPos=[];
+  inputs.forEach(i=>{
+    const amt=Number(i.value)||0;
+    if(amt>0){
+      const a=assets.find(x=>x.id===i.dataset.id);
+      newPos.push({id:a.id,amount:amt,remaining:a.term});
+    }
+  });
+  state.cash-=total;
+  state.positions.push(...newPos);
+
+  const r=rounds[state.round];
+  let pnl=0;
+  state.positions.forEach(p=>{
+    const a=assets.find(x=>x.id===p.id);
+    pnl += p.amount*assetRoundReturn(a,r);
+  });
+  const roundRet=pnl/Math.max(state.nav,.01);
+  state.nav+=pnl;
+  state.returns.push(roundRet);
+  state.peak=Math.max(state.peak,state.nav);
+  state.maxDD=Math.max(state.maxDD,(state.peak-state.nav)/Math.max(state.peak,.01));
+
+  state.positions.forEach(p=>{
+    const a=assets.find(x=>x.id===p.id);
+    if(a.type==='Treasury'||a.type==='CD') p.remaining-=1;
+  });
+  let matured=0;
+  state.positions=state.positions.filter(p=>{
+    const a=assets.find(x=>x.id===p.id);
+    if((a.type==='Treasury'||a.type==='CD')&&p.remaining<=0){
+      matured+=p.amount*(1+a.yield/6*Math.max(1,a.term));
+      return false;
+    }
+    return true;
+  });
+  state.cash+=matured;
+
+  if(state.round===5){finish();return;}
+  state.round++;
+  render();
+}
+
+function finish(){
+  $('game').classList.add('hidden');
+  const avg=state.returns.reduce((a,b)=>a+b,0)/state.returns.length;
+  const sd=Math.sqrt(state.returns.reduce((s,x)=>s+(x-avg)**2,0)/state.returns.length);
+  const sharpe=sd?(avg-.003)/sd:0;
+  const liquidity=state.cash/Math.max(state.nav,.01);
+  const score=Math.round((state.nav/state.initial*100)+(sharpe*12)-(state.maxDD*100)+(liquidity*8));
+  $('mScore').textContent=score;
+  let grade=score>=118?'A':score>=108?'B':score>=98?'C':score>=88?'D':'F';
+  $('results').classList.remove('hidden');
+  $('results').innerHTML=`
+    <h2>Game Complete</h2>
+    <p class="muted">${state.manager}, you completed all six capital-markets objectives.</p>
+    <div class="market-row" style="margin-top:14px">
+      <div class="market-box"><span>Ending NAV</span><b>${money(state.nav)}</b></div>
+      <div class="market-box"><span>Total Return</span><b>${pct(state.nav/state.initial-1)}</b></div>
+      <div class="market-box"><span>Max Drawdown</span><b>${pct(state.maxDD)}</b></div>
+      <div class="market-box"><span>Final Grade</span><b class="gold">${grade}</b></div>
+    </div>
+    <p style="margin-top:16px"><b>Final score: ${score}</b>. The scoring rewards return, risk-adjusted consistency, drawdown control, and liquidity management.</p>
+    <div class="actions"><button class="primary" id="restartBtn">Play Again</button></div>`;
+  $('restartBtn').addEventListener('click',()=>location.reload());
+}
+
+$('startBtn').addEventListener('click',()=>{
+  state.manager=$('manager').value.trim()||'Portfolio Manager';
+  state.mandate=$('mandate').value;
+  $('setup').classList.add('hidden');
+  $('game').classList.remove('hidden');
+  render();
+});
+$('advanceBtn').addEventListener('click',advance);
+$('resetBtn').addEventListener('click',()=>{
+  document.querySelectorAll('#assetGrid input').forEach(i=>i.value='0');
+  updateAllocationStatus();
+});
+</script>
+</body>
+</html>
