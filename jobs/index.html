@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#07111f" />
+  <title>Lena's Finance Job Radar</title>
+  <style>
+    :root{--bg:#07111f;--panel:#0d1a2b;--panel2:#101f33;--line:#21334a;--text:#eef5ff;--muted:#91a5bf;--accent:#54d5ff;--accent2:#7af0bd;--warn:#ffd27a;--bad:#ff8e9b;--shadow:0 18px 50px rgba(0,0,0,.28)}
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:radial-gradient(circle at 15% -5%,#102b48 0,transparent 34%),radial-gradient(circle at 100% 0,#10283a 0,transparent 30%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:inherit}.wrap{max-width:1240px;margin:auto;padding:26px 20px 70px}.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:22px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2);font-weight:800}.title{font-size:clamp(32px,5vw,58px);line-height:1.02;margin:8px 0 10px;letter-spacing:-.045em}.subtitle{color:var(--muted);max-width:720px;font-size:16px;margin:0}.live-pill{white-space:nowrap;border:1px solid #29435d;background:rgba(16,31,51,.7);padding:9px 12px;border-radius:999px;color:#b9cbe0;font-size:13px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent2);margin-right:7px;box-shadow:0 0 14px var(--accent2)}
+    .toolbar,.stats,.section{border:1px solid var(--line);background:rgba(13,26,43,.84);backdrop-filter:blur(10px);box-shadow:var(--shadow)}.toolbar{border-radius:18px;padding:14px;display:grid;grid-template-columns:2fr repeat(3,1fr) auto;gap:10px;position:sticky;top:10px;z-index:20}.toolbar input,.toolbar select,.btn{min-height:43px;border-radius:12px;border:1px solid #29405a;background:#091625;color:var(--text);padding:0 12px}.toolbar input::placeholder{color:#678099}.btn{display:inline-flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer;text-decoration:none}.btn:hover{border-color:#4f789d;transform:translateY(-1px)}.btn-primary{background:linear-gradient(135deg,#21a8d8,#3ac8a1);border:none;color:#03131d}.btn-ghost{background:#0a1727}.btn-small{min-height:36px;padding:0 10px;font-size:12px}
+    .stats{margin-top:14px;border-radius:16px;padding:13px 16px;display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.stat b{display:block;font-size:21px}.stat span{color:var(--muted);font-size:12px}.notice{margin:12px 2px 0;color:var(--muted);font-size:12px}.section{margin-top:22px;border-radius:20px;padding:20px}.section-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:14px}.section h2{font-size:21px;margin:0}.section p{margin:4px 0 0;color:var(--muted)}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{position:relative;background:linear-gradient(180deg,rgba(16,31,51,.95),rgba(9,22,37,.94));border:1px solid #233a54;border-radius:16px;padding:17px;display:flex;flex-direction:column;min-height:240px}.card:hover{border-color:#41668a}.card-top{display:flex;justify-content:space-between;gap:12px}.company{font-weight:800;color:#b5c8dc;font-size:13px}.job-title{font-size:19px;line-height:1.25;font-weight:850;margin:4px 0 6px;letter-spacing:-.01em}.meta{color:#91a5bf;font-size:13px}.salary{margin-top:8px;font-weight:800;color:#dcecff}.desc{margin-top:10px;color:#acc0d5;font-size:13px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.tags{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.tag{font-size:11px;border-radius:999px;padding:4px 8px;border:1px solid #2a435f;background:#0a1829;color:#a9bed5}.tag.live{border-color:#23604d;color:#91e7c3}.tag.hot{border-color:#61522c;color:#f6d78a}.actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}.apply{flex:1;background:linear-gradient(135deg,#34b9e2,#55d3ac);color:#03131d;border:none}.save.active{border-color:#397f69;color:#8cf0c4}.status-menu{appearance:auto}.source{font-size:11px;color:#698199}.empty{grid-column:1/-1;padding:35px;text-align:center;border:1px dashed #2a4057;border-radius:14px;color:var(--muted)}
+    .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.quick{display:block;text-decoration:none;border:1px solid #263e58;background:#0a1828;border-radius:14px;padding:14px}.quick b{display:block}.quick span{color:var(--muted);font-size:12px}.quick:hover{border-color:#4a7398}.target-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.target{border:1px solid #263e58;background:#0a1828;border-radius:12px;padding:11px;text-decoration:none;text-align:center;font-weight:750;font-size:13px}.target:hover{border-color:#4a7398}.footer{color:#607991;font-size:12px;text-align:center;margin-top:22px}.spinner{display:inline-block;width:13px;height:13px;border:2px solid #4b5f73;border-top-color:#83ebc7;border-radius:50%;animation:spin .75s linear infinite;margin-right:7px;vertical-align:-2px}@keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:900px){.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.stats{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(2,1fr)}.target-grid{grid-template-columns:repeat(3,1fr)}.top{display:block}.live-pill{display:inline-block;margin-top:14px}}@media(max-width:520px){.wrap{padding:18px 12px 50px}.toolbar{position:static;grid-template-columns:1fr}.toolbar input{grid-column:auto}.stats{grid-template-columns:repeat(2,1fr)}.quick-grid,.target-grid{grid-template-columns:1fr 1fr}.section{padding:14px}.actions .btn{flex:1}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div>
+        <div class="eyebrow">Personal career dashboard</div>
+        <h1 class="title">Lena's Finance Job Radar</h1>
+        <p class="subtitle">Open the page, scan finance roles that fit your target markets, and go straight to the application. Live feeds refresh when the page loads; your saved and application statuses stay on this browser.</p>
+      </div>
+      <div class="live-pill"><span class="dot"></span><span id="freshness">Loading live feeds…</span></div>
+    </header>
+
+    <section class="toolbar">
+      <input id="search" type="search" placeholder="Search title, company, skill…" aria-label="Search jobs" />
+      <select id="location"><option value="all">All locations</option><option value="nyc">New York City</option><option value="palm">Palm Beach / South Florida</option><option value="austin">Austin</option><option value="remote">Remote</option></select>
+      <select id="role"><option value="all">All finance roles</option><option value="investment">Investment / Research</option><option value="corpdev">Corporate Development</option><option value="strategic">Strategic Finance / FP&A</option><option value="treasury">Treasury / Capital</option></select>
+      <select id="status"><option value="all">All statuses</option><option value="new">Not tracked</option><option value="saved">Saved</option><option value="applied">Applied</option><option value="interview">Interview</option><option value="offer">Offer</option><option value="dismissed">Dismissed</option></select>
+      <button class="btn btn-primary" id="refresh">↻ Refresh</button>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><b id="visibleCount">0</b><span>shown now</span></div><div class="stat"><b id="liveCount">0</b><span>live-feed roles</span></div><div class="stat"><b id="savedCount">0</b><span>saved</span></div><div class="stat"><b id="appliedCount">0</b><span>applied</span></div><div class="stat"><b id="interviewCount">0</b><span>interviews</span></div>
+    </section>
+    <div class="notice">Live employer feeds are filtered for finance, investing, corporate development, treasury, valuation, and research terms. Always confirm the role is still open on the employer page before submitting.</div>
+
+    <section class="section">
+      <div class="section-head"><div><h2>Best matching openings</h2><p id="resultNote">Loading active roles…</p></div><button class="btn btn-ghost btn-small" id="clearFilters">Clear filters</button></div>
+      <div class="cards" id="cards"><div class="empty"><span class="spinner"></span>Loading finance openings…</div></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>One-click live searches</h2><p>Use these when you want to go beyond the roles already pulled into the dashboard.</p></div></div>
+      <div class="quick-grid" id="quickSearches"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>Target firms</h2><p>Fast routes to finance-heavy employers and investment firms you may want to monitor.</p></div></div>
+      <div class="target-grid" id="targets"></div>
+    </section>
+    <div class="footer">Built as a lightweight personal dashboard. Application tracking is stored locally in your browser; no account or database is required.</div>
+  </main>
+<script>
+const SEED_JOBS = [
+ {id:'certik-fa',title:'Financial Analyst (Entry-Level)',company:'CertiK',location:'New York, NY / Remote',loc:'nyc remote',role:'strategic',salary:'',source:'Lever',url:'https://jobs.lever.co/certik/7d25f5e8-2fed-412c-b182-6568a491483e',posted:'2026-09-17',live:true,desc:'Entry-level finance role supporting reconciliations, financial records, close processes and strategic analysis.'},
+ {id:'toolost-investment',title:'Investment Analyst',company:'Too Lost',location:'New York / Los Angeles',loc:'nyc',role:'investment',salary:'',source:'Lever',url:'https://jobs.lever.co/too-lost/b3af10d0-9e1b-45fd-9dce-504fd5967b68',posted:'2026-09-17',live:true,desc:'Deal underwriting and valuation role covering catalog acquisitions, advances, diligence, forecasting and investment-committee materials.'},
+ {id:'dshs-austin-fa',title:'Financial Analyst III',company:'Texas DSHS',location:'Austin, TX',loc:'austin',role:'strategic',salary:'$5,425–$7,200 / month',source:'Employer',url:'https://careers.hhs.texas.gov/dshsjobs/job/AUSTIN-Financial-Analyst-TX-73301/1430012300/',posted:'2026-09-15',live:true,desc:'Advanced financial monitoring, forecasting, budget analysis, procurement support and financial reporting.'},
+ {id:'utaustin-sfa',title:'Senior Financial Analyst',company:'The University of Texas at Austin',location:'Austin, TX',loc:'austin remote',role:'strategic',salary:'',source:'Employer',url:'https://utaustin.wd1.myworkdayjobs.com/en-US/UTstaff/job/AUSTIN-TX/Senior-Financial-Analyst_R_00048667',posted:'2026-09-13',live:true,desc:'Budget planning, forecasting, reporting and financial analysis supporting Enterprise Technology leadership.'},
+ {id:'travis-fa',title:'Financial Analyst',company:'Travis County',location:'Austin, TX',loc:'austin',role:'strategic',salary:'$61,942–$70,054',source:'Employer',url:'https://www.governmentjobs.com/careers/traviscounty/jobs/5427959/financial-analyst',posted:'2026-07-31',live:true,desc:'Financial analysis, budget work and reporting in a flexible/hybrid county role.'},
+ {id:'hanger-fa',title:'Financial Analyst',company:'Hanger, Inc.',location:'Austin, TX',loc:'austin',role:'strategic',salary:'',source:'Employer',url:'https://careers-hanger.icims.com/jobs/31985/financial-analyst/job',posted:'2026-08-25',live:true,desc:'Finance and accounting analyst role based in Austin.'},
+ {id:'firsthorizon-wpb',title:'Financial Analyst — Corporate Treasury',company:'First Horizon Bank',location:'West Palm Beach, FL',loc:'palm',role:'treasury',salary:'',source:'Indeed / Employer listing',url:'https://www.indeed.com/viewjob?jk=ef97ca68a74842ba',posted:'2026-09-03',live:true,desc:'Loan and deposit pricing analysis, executive reporting, data management and corporate treasury project support.'},
+ {id:'cfs-wpb',title:'Financial Analyst',company:'CFS',location:'West Palm Beach, FL',loc:'palm',role:'strategic',salary:'$100K–$115K',source:'LinkedIn',url:'https://www.linkedin.com/jobs/view/financial-analyst-at-cfs-4450837600',posted:'2026-08-17',live:true,desc:'FP&A role spanning forecasting, profitability, working capital, scenario analysis, KPI reporting and strategic decision support.'}
+];
+
+const ASHBY_BOARDS = [
+ {board:'kalshi',company:'Kalshi'}, {board:'sent',company:'Sent'}, {board:'cogent-security',company:'Cogent Security'},
+ {board:'dailypay',company:'DailyPay'}, {board:'cloaked',company:'Cloaked'}, {board:'axion',company:'Axion'}, {board:'shiftsmart',company:'Shiftsmart'}, {board:'material',company:'Material'}
+];
+const FINANCE_RE = /(finance|financial|investment|investor|corporate development|corp dev|fp&a|treasury|capital markets|capital strategy|valuation|equity research|research analyst|portfolio|underwriting|m&a)/i;
+const ROLE = t => /investment|portfolio|equity research|research analyst|underwriting/i.test(t)?'investment':/corporate development|corp dev|m&a/i.test(t)?'corpdev':/treasury|capital markets|capital strategy/i.test(t)?'treasury':'strategic';
+const LOC = s => {s=(s||'').toLowerCase();let a=[];if(/new york|nyc|manhattan|brooklyn/.test(s))a.push('nyc');if(/palm beach|boca raton|fort lauderdale|miami|south florida/.test(s))a.push('palm');if(/austin/.test(s))a.push('austin');if(/remote|united states|usa/.test(s))a.push('remote');return a.join(' ')||'other'};
+const safe = s => String(s||'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+const strip = s => String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+const daysAgo = d => {if(!d)return '';const n=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));return n===0?'Today':n===1?'1 day ago':`${n} days ago`};
+
+let jobs=[...SEED_JOBS], loading=false;
+let tracking=JSON.parse(localStorage.getItem('lenaJobTracking')||'{}');
+const persist=()=>localStorage.setItem('lenaJobTracking',JSON.stringify(tracking));
+
+async function fetchAshby(){
+  const out=[];
+  await Promise.all(ASHBY_BOARDS.map(async b=>{
+    try{
+      const r=await fetch(`https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(b.board)}?includeCompensation=true`,{cache:'no-store'});
+      if(!r.ok)return; const data=await r.json();
+      for(const j of (data.jobs||[])){
+        if(j.isListed===false || !FINANCE_RE.test(`${j.title} ${j.department||''} ${j.team||''}`)) continue;
+        const loc=[j.location,...(j.secondaryLocations||[]).map(x=>x.location)].filter(Boolean).join(' / ');
+        const searchable=`${loc} ${j.isRemote?'remote':''}`;
+        if(!/(new york|nyc|austin|palm beach|boca raton|miami|fort lauderdale|remote|united states|usa)/i.test(searchable)) continue;
+        out.push({id:`ashby-${b.board}-${j.jobUrl||j.title}`,title:j.title,company:b.company,location:loc|| (j.isRemote?'Remote':'Location not listed'),loc:LOC(searchable),role:ROLE(j.title),salary:j.compensation?.scrapeableCompensationSalarySummary||j.compensation?.compensationTierSummary||'',source:'Live employer feed',url:j.applyUrl||j.jobUrl,posted:j.publishedAt||'',live:true,desc:strip(j.descriptionPlain||'').slice(0,310)});
+      }
+    }catch(e){}
+  }));
+  return out;
+}
+
+async function fetchJobicy(){
+  const tags=['finance','financial analyst','investment analyst','corporate development']; const all=[];
+  await Promise.all(tags.map(async tag=>{
+    try{
+      const r=await fetch(`https://jobicy.com/api/v2/remote-jobs?count=50&geo=usa&tag=${encodeURIComponent(tag)}`,{cache:'no-store'});
+      if(!r.ok)return; const data=await r.json();
+      for(const j of (data.jobs||[])){
+        const title=j.jobTitle||j.title||''; if(!FINANCE_RE.test(title+' '+(j.jobExcerpt||'')))continue;
+        const url=j.url||j.jobUrl||''; if(!url)continue;
+        const sal=[j.annualSalaryMin,j.annualSalaryMax].filter(Boolean).join('–');
+        all.push({id:`jobicy-${j.id||url}`,title,company:j.companyName||j.company||'Company',location:j.jobGeo||j.location||'Remote — USA',loc:'remote',role:ROLE(title),salary:sal?`${j.salaryCurrency||'$'} ${sal}`:'',source:'Jobicy',url,posted:j.pubDate||j.date||'',live:true,desc:strip(j.jobExcerpt||j.jobDescription||'').slice(0,310)});
+      }
+    }catch(e){}
+  }));
+  return all;
+}
+function dedupe(list){const seen=new Set();return list.filter(j=>{const k=(j.url||`${j.company}|${j.title}|${j.location}`).toLowerCase();if(seen.has(k))return false;seen.add(k);return true})}
+
+async function loadLive(){
+  if(loading)return; loading=true; document.getElementById('freshness').innerHTML='<span class="spinner"></span>Refreshing…'; document.getElementById('refresh').disabled=true;
+  const [ashby,jobicy]=await Promise.all([fetchAshby(),fetchJobicy()]);
+  jobs=dedupe([...ashby,...jobicy,...SEED_JOBS]); loading=false; document.getElementById('refresh').disabled=false;
+  const now=new Date(); document.getElementById('freshness').textContent=`Live • ${now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`; render();
+}
+
+function matches(j){
+ const q=document.getElementById('search').value.trim().toLowerCase(), l=document.getElementById('location').value, r=document.getElementById('role').value, s=document.getElementById('status').value;
+ const state=tracking[j.id]?.status||'new';
+ return (!q||`${j.title} ${j.company} ${j.location} ${j.desc}`.toLowerCase().includes(q)) && (l==='all'||j.loc.includes(l)) && (r==='all'||j.role===r) && (s==='all'||state===s);
+}
+function card(j){
+ const tr=tracking[j.id]||{}, state=tr.status||'new', saved=state==='saved';
+ return `<article class="card"><div class="card-top"><div><div class="company">${safe(j.company)}</div><div class="job-title">${safe(j.title)}</div><div class="meta">${safe(j.location)}${j.posted?` • ${safe(daysAgo(j.posted))}`:''}</div></div><div class="source">${safe(j.source)}</div></div>${j.salary?`<div class="salary">${safe(j.salary)}</div>`:''}<div class="desc">${safe(j.desc||'Open the listing for full role details and requirements.')}</div><div class="tags"><span class="tag live">Active link</span><span class="tag">${safe(j.role==='investment'?'Investment / Research':j.role==='corpdev'?'Corporate Development':j.role==='treasury'?'Treasury / Capital':'Strategic Finance / FP&A')}</span>${j.loc.includes('remote')?'<span class="tag hot">Remote</span>':''}</div><div class="actions"><a class="btn apply" href="${safe(j.url)}" target="_blank" rel="noopener" onclick="markOpened('${safe(j.id)}')">Apply ↗</a><button class="btn btn-ghost save ${saved?'active':''}" onclick="toggleSave('${safe(j.id)}')">${saved?'★ Saved':'☆ Save'}</button><select class="btn btn-ghost status-menu" onchange="setStatus('${safe(j.id)}',this.value)"><option value="new" ${state==='new'?'selected':''}>Not tracked</option><option value="saved" ${state==='saved'?'selected':''}>Saved</option><option value="applied" ${state==='applied'?'selected':''}>Applied</option><option value="interview" ${state==='interview'?'selected':''}>Interview</option><option value="offer" ${state==='offer'?'selected':''}>Offer</option><option value="dismissed" ${state==='dismissed'?'selected':''}>Dismiss</option></select></div></article>`;
+}
+function render(){
+ const filtered=jobs.filter(matches).sort((a,b)=>{const sa=tracking[a.id]?.status==='dismissed'?1:0,sb=tracking[b.id]?.status==='dismissed'?1:0; if(sa!==sb)return sa-sb;return new Date(b.posted||0)-new Date(a.posted||0)});
+ document.getElementById('cards').innerHTML=filtered.length?filtered.map(card).join(''):'<div class="empty">No roles match those filters. Clear a filter or use the live searches below.</div>';
+ document.getElementById('visibleCount').textContent=filtered.length; document.getElementById('liveCount').textContent=jobs.filter(j=>/Live employer feed|Jobicy/.test(j.source)).length;
+ const vals=Object.values(tracking).map(x=>x.status); document.getElementById('savedCount').textContent=vals.filter(x=>x==='saved').length; document.getElementById('appliedCount').textContent=vals.filter(x=>x==='applied').length; document.getElementById('interviewCount').textContent=vals.filter(x=>x==='interview').length;
+ document.getElementById('resultNote').textContent=`${filtered.length} role${filtered.length===1?'':'s'} shown • newest first`;
+}
+window.toggleSave=id=>{tracking[id]={...(tracking[id]||{}),status:tracking[id]?.status==='saved'?'new':'saved'};persist();render()};
+window.setStatus=(id,status)=>{tracking[id]={...(tracking[id]||{}),status,updated:new Date().toISOString()};persist();render()};
+window.markOpened=id=>{tracking[id]={...(tracking[id]||{}),opened:new Date().toISOString()};persist()};
+
+const QUICK=[
+ ['NYC — Investment / Equity Research','New York investment analyst equity research analyst jobs','nyc'],['NYC — Corporate Development','New York corporate development analyst finance jobs','nyc'],['NYC — Strategic Finance','New York strategic finance FP&A analyst jobs','nyc'],['Palm Beach — Investment / Finance','West Palm Beach investment analyst financial analyst jobs','palm'],['South Florida — Asset Management','Palm Beach Miami asset management investment analyst jobs','palm'],['Austin — Investment / Finance','Austin investment analyst financial analyst jobs','austin'],['Austin — Corporate Development','Austin corporate development analyst finance jobs','austin'],['Remote — Finance','remote strategic finance investment analyst jobs USA','remote']
+];
+const TARGETS=['BlackRock','JPMorgan Chase','Goldman Sachs','Morgan Stanley','KKR','Blackstone','Apollo Global Management','Ares Management','Citadel','Point72','Millennium Management','Jefferies','Evercore','Lazard','Bank of America'];
+function googleJobs(q){return `https://www.google.com/search?q=${encodeURIComponent(q)}`}
+document.getElementById('quickSearches').innerHTML=QUICK.map(x=>`<a class="quick" target="_blank" rel="noopener" href="${googleJobs(x[1])}"><b>${safe(x[0])} ↗</b><span>Open a fresh web search for matching postings</span></a>`).join('');
+document.getElementById('targets').innerHTML=TARGETS.map(c=>`<a class="target" target="_blank" rel="noopener" href="${googleJobs(`${c} careers finance analyst investment New York Palm Beach Austin`)}">${safe(c)} ↗</a>`).join('');
+
+['search','location','role','status'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',render));
+document.getElementById('refresh').addEventListener('click',loadLive); document.getElementById('clearFilters').addEventListener('click',()=>{document.getElementById('search').value='';document.getElementById('location').value='all';document.getElementById('role').value='all';document.getElementById('status').value='all';render()});
+render(); loadLive();
+</script>
+</body>
+</html>
